@@ -19,3 +19,6 @@ $ nasm -f elf64 exemplo.asm
 
 $ ld -s -o exemplo exemplo.o
 
+- Para executar:
+
+$ ./exemplo
