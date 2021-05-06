@@ -1,3 +1,9 @@
+;-------------------------------------------------
+; Comparação entre programa feito em C e Assembly
+; Eng. Fabrício de Lima Ribeiro
+; 05/05/2021
+;-------------------------------------------------
+
 section .text
 
 global _start
