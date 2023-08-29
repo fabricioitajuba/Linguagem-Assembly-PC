@@ -27,8 +27,8 @@ section .bss
   opc   resb 2  ;Reserva 2 bytes para opção
   val1  resw 1  
   val2  resw 1
-  resul resw 1
-  resto resb 1  ;Resto da divisão  
+  resul resq 1
+  resto resq 1  ;Resto da divisão  
 
 section .text
   global _start 
