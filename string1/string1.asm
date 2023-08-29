@@ -1,3 +1,4 @@
+;Plota string em 32bits
 section .data
   SYS_WRITE equ 0x4  ; Operacao de escrita
   STD_OUT   equ 0x1  ; Saida padrao
@@ -16,7 +17,9 @@ section .text
   global _start 
 
 _start:
+  push EAX
   mov ECX, msg1     ;String a ser impressa
+  pop EAX
   call Print_String ;Chama a rotina de impressão da sting
 
   mov EAX, SYS_EXIT ;Sai do programa

@@ -1,8 +1,8 @@
 NOME = string1
 
 all: $(NOME).o
-	ld -s -o $(NOME) $(NOME).o
-	rm -rf *.o;
+	ld -m elf_i386 -o $(NOME) $(NOME).o
+	rm -rf *.o
 
 %.o: %.asm
-	nasm -f elf64 $<
+	nasm -f elf32 $<
