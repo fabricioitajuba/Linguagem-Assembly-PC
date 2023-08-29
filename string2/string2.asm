@@ -1,6 +1,8 @@
+;Plota string em 64bits
 ;Fontes
 ;https://www.youtube.com/watch?v=XuUD0WQ9kaE&list=PLaulI0GDfISnR2g7bC2HemGcXPfzXr1vi
 ;https://pastebin.com/PN2jKVae
+;64 bits
 
 section .bss
     digitSpace resb 100
@@ -14,7 +16,7 @@ section .text
  
 _start:
  
-    mov rax, 256	;Inteiro para ser convertido para string
+    mov rax, 13424562	;Inteiro para ser convertido para string
     call _printRAX
  
     mov rax, 60
