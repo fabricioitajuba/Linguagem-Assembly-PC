@@ -1,5 +1,6 @@
-;Este programa executa operações de soma, subtração, multiplicação e divisão
-;27/08/2023
+; Este programa executa operações de soma, subtração, multiplicação e divisão
+; Autor: Eng. Fabrício de Lima Ribeiro
+; 27/08/2023
 
 %include 'biblioteca.inc'
 
