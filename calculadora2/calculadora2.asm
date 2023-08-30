@@ -27,8 +27,8 @@ section .data
 
 section .bss
   opc   resb 2  ;Reserva 2 bytes para opção
-  val1  resw 1  
-  val2  resw 1
+  val1  resb 7  
+  val2  resb 7
   resul resq 1
   resto resq 1  ;Resto da divisão  
 
@@ -94,15 +94,13 @@ somar:
 
   mov DWORD[resul], 0000h
 
-  lea ESI, [val1]         ;pega o endereço de val1
-  mov RCX, 0x2            ;números de caracteres da string
-  call string_to_int      ;converte de string para inteiro
+  mov RDX, val1		  ;pega o endereço de val1
+  call String_Int	  ;converte de string para inteiro
   add [resul], RAX        ;Faz a soma
 
-  lea ESI, [val2]         ;pega o endereço de val2
-  mov RCX, 0x2            ;números de caracteres da string
-  call string_to_int      ;converte de string para inteiro
-  add [resul], RAX        
+  mov RDX, val2		  ;pega o endereço de val2
+  call String_Int	  ;converte de string para inteiro
+  add [resul], RAX        ;Faz a soma
 
   mov RAX, msg14          ;String a ser impressa
   call Print_String       ;Chama a rotina de impressão da string
@@ -123,14 +121,12 @@ subtrair:
 
   mov DWORD[resul], 0000h
 
-  lea ESI, [val1]         ;pega o endereço de val1
-  mov RCX, 0x2            ;números de caracteres da string
-  call string_to_int      ;converte de string para inteiro
-  add [resul], RAX        
+  mov RDX, val1		  ;pega o endereço de val1
+  call String_Int	  ;converte de string para inteiro
+  add [resul], RAX        ;Faz a soma        
 
-  lea ESI, [val2]         ;pega o endereço de val2
-  mov RCX, 0x2            ;números de caracteres da string
-  call string_to_int      ;converte de string para inteiro
+  mov RDX, val2		  ;pega o endereço de val2
+  call String_Int	  ;converte de string para inteiro
   sub [resul], RAX        ;Faz a subtração
 
   mov RAX, msg14          ;String a ser impressa
@@ -152,17 +148,15 @@ multiplicar:
 
   mov DWORD[resul], 0000h
 
-  lea ESI, [val1]         ;pega o endereço de val1
-  mov RCX, 0x2            ;números de caracteres da string
-  call string_to_int      ;converte de string para inteiro
+  mov RDX, val1		  ;pega o endereço de val1
+  call String_Int	  ;converte de string para inteiro
+  mov [resul], RAX
 
-  mov [resul], RAX        
-
-  lea ESI, [val2]         ;pega o endereço de val2
-  mov RCX, 0x2            ;números de caracteres da string
-  call string_to_int      ;converte de string para inteiro
-
-  mov RBX, [resul]
+  mov RDX, val2		  ;pega o endereço de val2
+  call String_Int	  ;converte de string para inteiro
+  mov RBX, RAX
+  
+  mov RAX, [resul]
   mul RBX                 ;Faz a multiplicação
   mov [resul], RAX
 
@@ -185,15 +179,12 @@ dividir:
 
   mov DWORD[resul], 0000h
 
-  lea ESI, [val1]         ;pega o endereço de val1
-  mov RCX, 0x2            ;números de caracteres da string
-  call string_to_int      ;converte de string para inteiro
+  mov RDX, val1		  ;pega o endereço de val1
+  call String_Int	  ;converte de string para inteiro
+  mov [resul], RAX
 
-  mov [resul], RAX        
-
-  lea ESI, [val2]         ;pega o endereço de val2
-  mov RCX, 0x2            ;números de caracteres da string
-  call string_to_int      ;converte de string para inteiro
+  mov RDX, val2		  ;pega o endereço de val2
+  call String_Int	  ;converte de string para inteiro
 
   mov RCX, RAX            ;Guarda RAX em RCX (divisor)
   mov RAX, [resul]        ;Guarda result em RAX (dividendo)
@@ -227,7 +218,7 @@ Entrada_dados:
   mov RAX, SYS_READ ;Chamada de leitura
   mov RDI, STD_IN   ;Entrada padrão
   mov RSI, val1     ;Guarda a tecla lida em val1
-  mov RDX, 03h      ;lê 2 teclas (a tecla escolhida + Enter)
+  mov RDX, 10       ;lê até 10 digitos
   syscall
 
   mov RAX, msg13     ;String a ser impressa
@@ -237,7 +228,7 @@ Entrada_dados:
   mov RAX, SYS_READ ;Chamada de leitura
   mov RDI, STD_IN   ;Entrada padrão
   mov RSI, val2     ;Guarda a tecla lida em val2
-  mov RDX, 03h      ;lê 2 teclas (a tecla escolhida + Enter)
+  mov RDX, 10       ;lê até 10 digitos
   syscall
 
   ret

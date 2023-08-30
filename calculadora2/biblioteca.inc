@@ -18,8 +18,8 @@ segment .data
   STD_OUT       equ 1      ; System.out
 
 segment .bss
-	digitSpace resb 100
-	digitSpacePos resb 8
+	digitSpace 	resb 100
+	digitSpacePos 	resb 8
 
 segment .text
 
@@ -45,23 +45,27 @@ _printLoop:
 	syscall
 	ret
 
- ; -----------------------------------------
-; Converte String para Inteiro
-; Entrada: ESI (valor conv) RCX (tamanho)
-; Saida..: RAX com o valor
-; -----------------------------------------
-string_to_int:
- 	xor RBX, RBX          ;Zera RBX
-.prox_digito:
-	movzx RAX, byte[ESI]  ;mode todos os bytes de ESI para RAX
-	inc ESI
-	sub AL, '0'           ;subtrai 0x30 de AL resultando: apenas o numero
-	imul RBX, 10          ;multiplica RBX por 10
-	add RBX, RAX          ;RBX = RBX + RAX
-	loop .prox_digito     ;while (--RCX)
-terminei_S2I:
-	mov RAX, RBX
-	ret
+;-------------------------------------------
+;String para inteiro
+;Entrada: Ponteiro da String em RDX
+;Saída: RAX - string convertida para inteiro
+;-------------------------------------------
+String_Int:
+atoi:
+	xor RAX, RAX 		; zero a "result so far"
+.top:
+	movzx RCX, byte [RDX] 	; get a character
+	inc RDX 		; ready for next one
+	cmp RCX, '0' 		; valid?
+	jb .done
+	cmp RCX, '9'
+	ja .done
+	sub RCX, '0' 		; "convert" character to number
+	imul RAX, 10 		; multiply "result so far" by ten
+	add RAX, RCX 		; add in current digit
+	jmp .top 		; until done
+.done:
+    ret 
 
 ; -----------------------------------------
 ; Converte Inteiro para String
