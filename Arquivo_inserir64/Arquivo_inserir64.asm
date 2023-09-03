@@ -20,6 +20,9 @@ section .data
     text db "Isto será escrito no arquivo!", LF 
     tam equ $- text
  
+section .bss
+    fd  resb 4          ;File Descriptor
+
 section .text
     global _start
 _start:
@@ -29,18 +32,19 @@ _start:
     mov rsi, O_CREAT+O_WRONLY+O_APPEND      ;Cria o arquivo caso não exista
     mov rdx, 0644o                          ;Permissões
     syscall
-    
+
+    mov [fd], rax ; armazenar o valor do File Descriptor
+
     ;Escreve no arquivo
-    push rax
-    mov rdi, rax
     mov rax, SYS_WRITE
+    mov rdi, [fd]
     mov rsi, text
     mov rdx, tam                 ;Número de bytes a serem escritos
     syscall
  
     ;Fecha o arquivo
     mov rax, SYS_CLOSE
-    pop rdi
+    mov rdi, [fd]
     syscall
  
     ;Sai do programa e retorna ao SO
