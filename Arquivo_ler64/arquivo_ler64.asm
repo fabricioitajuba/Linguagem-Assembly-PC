@@ -20,7 +20,7 @@ section .data
 section .bss
     text resb 30        ;Buffer de leitura
  	printSpace resb 8
-
+    fd  resb 4          ;File Descriptor
 section .text
     global _start
 
@@ -31,18 +31,19 @@ _start:
     mov rsi, O_RDONLY
     mov rdx, 0
     syscall
+
+    mov [fd], rax ; armazenar o valor do File Descriptor
     
     ;faz a leitura do arquivo
-    push rax
-    mov rdi, rax
     mov rax, SYS_READ
+    mov rdi, [fd]
     mov rsi, text
     mov rdx, 30         ;Número de bytes lidos
     syscall
  
     ;fecha o arquivo
     mov rax, SYS_CLOSE
-    pop rdi
+    mov rdi, [fd]
     syscall
  
     ;mostra na tela o conteúdo do arquivo
