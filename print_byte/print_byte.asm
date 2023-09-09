@@ -40,7 +40,7 @@ prox_digito:
         and rax, 0xF    ;faz um E lógico com F
         add rax, '0'    ;adiciona 0x30
         cmp rax, '9'    ;compara com 9
-        jle prox_digito ;se for menor ou igual, salta para prox_digito
+        jle fim         ;se for menor ou igual, salta para prox_digito
         add rax, 0x7    ;se não, adiciona 7.    
 fim:
         mov [rsi], rax  ;guarda o valor em rax em _byte
