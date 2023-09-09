@@ -65,10 +65,8 @@ digito2:
         dec rcx
         cmp rcx, 0
         jne loop1
-        mov rax, n_bytes
-        mov rbx, 2
-        mul rbx
-        mov rcx, rax
+        mov rcx, n_bytes
+        shl rcx, 1      ;multiplica o número de bytes por 2
 loop2:
         pop rax
         mov [rsi], rax
