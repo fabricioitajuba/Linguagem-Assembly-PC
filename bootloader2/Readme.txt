@@ -7,4 +7,6 @@ cat boot.bin kernel.bin > binario.bin
 
 - Criando o arquivo imagem:
 sudo dd if=binario.bin of=bootsec.flp
+
+- Executando o sistema:
 sudo qemu-system-x86_64 -fda bootsec.flp
