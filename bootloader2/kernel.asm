@@ -22,6 +22,14 @@ config:
     mov sp, 03FEh       ;configura o stack pointer
                         ;7D00h:03FEh
 
+    ;Limpa a tela
+    mov ah, 00h         ;modo de tela
+    mov al, 03h         ;modo texto 80x25 colorido
+    int 10h
+
+    ;Mostra a hora e data atual
+    call plota_hora_data
+
 	mov si, msg1        ;imprime mensagem 1
     call print_string
 
@@ -76,4 +84,143 @@ exit_read_string:
     inc di
     mov al, 0
     mov [di], al
+    ret
+
+;---------------------------
+;Plota a hora e data do sistema
+;---------------------------
+plota_hora_data:
+
+    ;Hora do sistema
+    mov ah, 02h
+    int 1ah
+
+    ;plota hora
+    sub ch, 03h ;ajusta a hora para o Brasil -3h
+    mov al, ch
+
+    push ax
+    shr al, 4
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    pop ax
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    mov ah, 0eh
+    mov al, ':'
+    int 10h    
+
+    ;plota minutos
+    mov al, cl
+
+    push ax
+    shr al, 4
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    pop ax
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    mov ah, 0eh
+    mov al, ':'
+    int 10h  
+
+    ;plota segundos
+    mov al, dh
+
+    push ax
+    shr al, 4
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    pop ax
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    mov ah, 0eh
+    mov al, '-'
+    int 10h  
+
+    ;Data do sistema
+    mov ah, 04h
+    int 1ah
+
+    ;plota dia
+    mov al, dl
+    push ax
+    shr al, 4
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    pop ax
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    mov ah, 0eh
+    mov al, '/'
+    int 10h
+
+    ;plota mês
+    mov al, dh
+    push ax
+    shr al, 4
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    pop ax
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    mov ah, 0eh
+    mov al, '/'
+    int 10h
+
+    ;plota ano
+    mov al, cl
+    push ax
+    shr al, 4
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    pop ax
+    and al, 0fh
+    add al, '0'
+    mov ah, 0eh
+    int 10h
+
+    ;pula linha
+    mov ah, 0eh
+    mov al, 0ah
+    int 10h    
+
+    ;retorna o cursor na primeira posição
+    mov ah, 0eh
+    mov al, 0dh
+    int 10h    
+
     ret
