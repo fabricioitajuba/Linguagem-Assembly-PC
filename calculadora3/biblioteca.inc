@@ -23,23 +23,24 @@ segment .bss
 segment .text
 
 ; -----------------------------------
-; Plota String
+; Print String
 ; Entrada: Ponteiro da string em RSI
 ; -----------------------------------
 Print_String:
-	mov RAX, RSI
-	mov RBX, 0
-_printLoop:
-	inc RAX
-	inc RBX
-	mov CL, [RAX]
-	cmp CL, 0
-	jne _printLoop
-
+	xor rcx, rcx
+	mov rbx, rsi
+loop_string:
+	mov al, [rbx]
+	cmp al, 0
+	je fim_string
+	inc rcx
+	inc rbx
+	jmp loop_string
+fim_string:
 	;Imprime a string
-	mov RAX, SYS_WRITE
-	mov RDI, STD_OUT
-	mov RDX, RBX
+	mov rax, 1
+	mov rdi, 1
+	mov rdx, rcx
 	syscall
 	ret
 
