@@ -1,0 +1,23 @@
+Como converter de .bin para .iso para usar no virtual box
+
+Fonte:
+https://stackoverflow.com/questions/34268518/creating-a-bootable-iso-image-with-custom-bootloader
+
+Instalar primeiramente o seguinte pacote:
+$ sudo apt install genisoimage
+
+Seguir os seguintes passos:
+
+$ nasm -f bin -o boot.bin boot.asm
+$ dd if=/dev/zero of=floppy.img bs=1024 count=1440
+$ dd if=boot.bin of=floppy.img seek=0 count=1 conv=notrunc
+$ mkdir iso
+$ cp floppy.img iso/
+$ genisoimage -quiet -V 'MYOS' -input-charset iso8859-1 -o myos.iso -b floppy.img \
+    -hide floppy.img iso/
+
+o arquivo myos.iso poderá ser carregado no virtual box normalmente.
+
+para carregar no qemu:
+
+qemu-system-i386 -cdrom ./myos.iso
