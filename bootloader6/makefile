@@ -1,3 +1,3 @@
 all:
-	nasm boot2.asm
-	qemu-system-i386 -hda boot2
+	nasm boot3.asm
+	qemu-system-i386 -hda boot3
