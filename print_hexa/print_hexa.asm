@@ -8,10 +8,10 @@
 ; xx xx xx xx xx xx xx xx -> 64 bits - 8 x 8 bits
 
 section .data
-	buffer times 17 db 0 ;armazena a string convertida
 
 section .bss
-        
+	buffer resb 17	;reserva 17 bytes
+
 section .text
         global  _start
 
