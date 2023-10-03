@@ -8,13 +8,10 @@
 ; xx xx xx xx xx xx xx xx -> 64 bits - 8 x 8 bits
 
 section .data
-        ;n_bytes equ 1 ;Define o número de bytes a ser convertido 1 byte
-        ;n_bytes equ 2 ;Define o número de bytes a ser convertido 2 byte
-        n_bytes equ 8 ;Define o número de bytes a ser convertido 8 bytes
+	buffer times 17 db 0 ;armazena a string convertida
 
 section .bss
-        buffer resb 9 ;armazena a string convertida
-
+        
 section .text
         global  _start
 
@@ -22,13 +19,11 @@ _start:
         ;mov rax, 0x12
         ;mov rax, 0x1234
         mov rax, 0x0123456789ABCDEF
-        mov rcx, n_bytes
-        mov rsi, buffer
-        call print_hexa
-
-        ;Impressão do valor em hexadecimal
-        mov RSI, buffer         ;String a ser impressa
-        call Print_String       ;Chama a rotina de impressão da string
+        mov rdx, 8              ;número de bytes a ser impresso
+        mov rsi, buffer		;local de armazenamento da string
+        call convert_hexa	;converte par hex
+        mov rsi, buffer		;local de armazenamento da string
+        call print_string	;imprime a string
 
         ;Fim do programa
         mov rax, 60
@@ -36,13 +31,21 @@ _start:
         syscall
 
 ;-------------------------------------------------------------
-;Rotina de impressão em hexadecimal
+;Rotina de conversão para hexadecimal
 ;Entrada: rax o valor em hexadecimal
-;         rcx o número de bytes
+;         rdx o número de bytes
 ;         rsi o ponteiro da string
 ;-------------------------------------------------------------
-print_hexa:     
+convert_hexa:   
+
+  	push rax
+        push rbx
+        push rcx
+	push rdx
+	push rsi
+
         mov rbx, rax
+        mov rcx, rdx
 loop1:
         mov rax, rbx
         and rax, 0xF    ;faz um E lógico com F
@@ -65,7 +68,7 @@ digito2:
         dec rcx
         cmp rcx, 0
         jne loop1
-        mov rcx, n_bytes
+        mov rcx, rdx
         shl rcx, 1      ;multiplica o número de bytes por 2
 loop2:
         pop rax
@@ -77,25 +80,49 @@ loop2:
         mov al, 0
         inc rsi
         mov [rsi], al
+
+	pop rsi
+	pop rdx
+        pop rcx
+        pop rbx
+	pop rax
+
         ret
 
 ; -----------------------------------
-; Plota String
+; Print String
 ; Entrada: Ponteiro da string em RSI
 ; -----------------------------------
-Print_String:
-	mov RAX, RSI
-	mov RBX, 0
-_printLoop:
-	inc RAX
-	inc RBX
-	mov CL, [RAX]
-	cmp CL, 0
-	jne _printLoop
+print_string:
 
-	;Imprime a string
-	mov RAX, 1
-	mov RDI, 1
-	mov RDX, RBX
+	push rax
+	push rbx
+	push rcx
+	push rdx
+	push rsi
+	push rdi
+
+	mov rbx, rsi
+	xor rcx, rcx
+print_loop:
+	mov al, [rbx]
+	cmp al, 0
+	je fim_print
+	inc rbx
+	inc rcx
+	jmp print_loop
+fim_print:
+	;Imprime a string, rsi possui o ponteiro
+	mov rax, 1
+	mov rdi, 1
+	mov rdx, rcx ;quantidade de bytes
 	syscall
+
+	pop rdi
+	pop rsi
+	pop rdx
+	pop rcx
+	pop rbx
+	pop rax
+
 	ret
