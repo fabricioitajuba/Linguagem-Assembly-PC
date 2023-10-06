@@ -10,16 +10,39 @@
 
 	;Print string
 	mov si, msg
-	mov ah, 0eh
-loop:	
-	mov al, [si]
-	cmp al, 0
-	je fim
-	int 10h
-	inc si
-	jmp loop
-fim:
+	call string_print
+
 	jmp $
+
+;----------------------------------------
+; Imprime uma string na tela
+; si ponteiro da string
+;----------------------------------------
+string_print:
+
+	push ax
+	push bx
+	push si
+
+	mov ah, 0eh	;Write text in teletype mode
+	mov bh, 00h	;page number (text modes)
+	mov bl, 00h	;foreground pixel color (graphics modes)
+
+string_print_loop:
+
+	lodsb			;carrega al com o conteúdo apontado por si e incrementa si
+	test al, al		;verifica se al é zero
+	jz string_print_end
+	int 10h
+	jmp string_print_loop
+
+string_print_end:
+
+	pop si
+	pop bx
+	pop ax
+
+	ret
 
 msg db "Boot carregado com sucesso!", 13, 10, 0
 
