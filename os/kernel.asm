@@ -5,11 +5,19 @@
 
 	;mensagens
 	CRLF db 10, 13, 0
+	version db 10, 13, "OS - versao 1.0", 10, 13, 0
+	help db 10, 13, "Comandos: ver, help, clear, time, date, reboot", 10, 13, 0
 	msg1 db "Boot e Kernell carregados!", 10, 13, 0
 	dsp_cursor db '$ ', 0
         dsp_cmd_invalido db 10, 13, 'Comando invalido! ', 10, 13, 0
 
         ;comandos
+        dsp_ver db 'ver', 0
+        tam_dsp_ver equ $- dsp_ver
+
+        dsp_help db 'help', 0
+        tam_dsp_help equ $- dsp_help
+
         dsp_clear db 'clear', 0
         tam_dsp_clear equ $- dsp_clear
 
@@ -63,6 +71,22 @@ inicio:
     	mov di, buffer
     	call string_read
 
+;--> comando ver
+        mov si, dsp_ver
+        mov di, buffer
+        mov cx, tam_dsp_ver
+        cld
+        repe cmpsb
+        jecxz _cmd_ver
+
+;--> comando help
+        mov si, dsp_help
+        mov di, buffer
+        mov cx, tam_dsp_help
+        cld
+        repe cmpsb
+        jecxz _cmd_help
+
 ;--> comando clear
         mov si, dsp_clear
         mov di, buffer
@@ -79,7 +103,7 @@ inicio:
         repe cmpsb
         jecxz _cmd_time
 
-;--> comando data
+;--> comando date
         mov si, dsp_date
         mov di, buffer
         mov cx, tam_dsp_date
@@ -104,6 +128,12 @@ inicio:
 ;------------------------------------------------
 ; Área de jumps
 ;------------------------------------------------
+
+_cmd_ver:
+	jmp cmd_ver
+
+_cmd_help:
+	jmp cmd_help
 
 _cmd_clear:
 	jmp cmd_clear
@@ -147,6 +177,7 @@ string_print_end:
 	pop ax
 
 	ret
+
 ;-------------------------------------------------
 ; Read string
 ; buffer = string lida
@@ -221,7 +252,28 @@ exit_read_string:
 	mov [di], al
 	ret
 
-;-------------------------------------------------
+
+;------------------------------------------------
+; comando ver
+; mostra a versão do sistema operacional
+;------------------------------------------------
+cmd_ver:
+	mov si, version 
+	call string_print
+
+	jmp inicio
+
+;------------------------------------------------
+; comando help
+; mostra todos os comandos
+;------------------------------------------------
+cmd_help:
+	mov si, help 
+	call string_print
+
+	jmp inicio
+
+;------------------------------------------------
 ; comando clear
 ; limpa a tela
 ;------------------------------------------------
@@ -233,7 +285,7 @@ cmd_clear:
 
         jmp inicio
 
-;-------------------------------------------------
+;------------------------------------------------
 ; comando time
 ; mostra a hora do sistema
 ;------------------------------------------------
@@ -310,6 +362,7 @@ cmd_time:
 	call string_print
 
 	jmp inicio
+
 
 ;-------------------------------------------------
 ; comando date
