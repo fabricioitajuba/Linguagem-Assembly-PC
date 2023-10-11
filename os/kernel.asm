@@ -1,49 +1,47 @@
 [BITS 16]
-[ORG 0000h]
+[ORG 8000h]
 
-	jmp config
+jmp config
 
-	;mensagens
-	CRLF db 10, 13, 0
-	version db 10, 13, "OS - versao 0.1", 10, 13, 0
-	help db 10, 13, "Comandos: ver, help, clear, time, date, reboot", 10, 13, 0
-	msg1 db "Boot e Kernell carregados!", 10, 13, 0
-	dsp_cursor db '$ ', 0
-        dsp_cmd_invalido db 10, 13, 'Comando invalido! ', 10, 13, 0
+;mensagens
+CRLF db 10, 13, 0
+version db 10, 13, "OS - versao 0.1", 10, 13, 0
+help db 10, 13, "Comandos: ver, help, clear, time, date, reboot, address", 10, 13, 0
+msg1 db "Boot e Kernell carregados!", 10, 13, 0
+dsp_cursor db '>> ', 0
+dsp_cmd_invalido db 10, 13, 'Comando invalido! ', 10, 13, 0
+_dsp_address: db 10, 13, "Address: ", 0
 
-        ;comandos
-        dsp_ver db 'ver', 0
-        tam_dsp_ver equ $- dsp_ver
+;comandos
+dsp_ver db 'ver', 0
+tam_dsp_ver equ $- dsp_ver
 
-        dsp_help db 'help', 0
-        tam_dsp_help equ $- dsp_help
+dsp_help db 'help', 0
+tam_dsp_help equ $- dsp_help
 
-        dsp_clear db 'clear', 0
-        tam_dsp_clear equ $- dsp_clear
+dsp_clear db 'clear', 0
+tam_dsp_clear equ $- dsp_clear
 
-        dsp_time db 'time', 0
-        tam_dsp_time equ $- dsp_time
+dsp_time db 'time', 0
+tam_dsp_time equ $- dsp_time
 
-        dsp_date db 'date', 0
-        tam_dsp_date equ $- dsp_date
+dsp_date db 'date', 0
+tam_dsp_date equ $- dsp_date
 
-        dsp_reboot db 'reboot', 0
-        tam_dsp_reboot equ $- dsp_reboot
+dsp_reboot db 'reboot', 0
+tam_dsp_reboot equ $- dsp_reboot
 
-	n_caracteres resb 1	;conta o número de caracteres
+dsp_address db 'address', 0
+tam_dsp_address equ $- dsp_address
 
-	;Buffer
-	buffer resb 30    	;Cria um buffer com 30 posições
+n_caracteres resb 1	;conta o número de caracteres
+
+;Buffer
+buffer resb 30    	;Cria um buffer com 30 posições
+buffert resb 5    	;Cria um buffer com 5 posições
+num: resw 1
 
 config:
-	;Configura segmento
-	mov ax, es          	;recebe de es o valor do segmento
-	mov ds, ax          	;configura o data segment
-
-	;Configura o stack
-	mov ax, 7D00h   	;configura o stack segment
-	mov ss, ax          	;configura o stack pointer
-	mov sp, 0xFFFF      	;7D00h:FFFFh
                         
 	;Configura o vídeo
 	mov ah, 00h         	;modo de tela
@@ -57,6 +55,7 @@ config:
 	;Boot e Kernell carregados!
 	mov si, msg1        
 	call string_print
+
 
 ;################################################
 ; Programa principal
@@ -119,15 +118,25 @@ inicio:
         repe cmpsb
         jecxz _cmd_reboot
 
+;--> comando address
+        mov si, dsp_address
+        mov di, buffer
+        mov cx, tam_dsp_address
+        cld
+        repe cmpsb
+        jecxz _cmd_address
+
 ;--> comando inválido
         mov si, dsp_cmd_invalido
 	call string_print
 
 	jmp inicio
 
-;------------------------------------------------
-; Área de jumps
-;------------------------------------------------
+
+
+;#################################################
+;Aárea de jumps
+;#################################################
 
 _cmd_ver:
 	jmp cmd_ver
@@ -146,6 +155,15 @@ _cmd_date:
 
 _cmd_reboot:
 	jmp cmd_reboot
+
+_cmd_address:
+	jmp cmd_address
+
+
+
+;#################################################
+;Aárea de rotinas do programa
+;#################################################
 
 ;------------------------------------------------
 ; Imprime uma string na tela
@@ -219,7 +237,7 @@ key_backspace:
 	dec al
 	mov [n_caracteres], al
 
-	mov ah, 03h		;Read Cursor Position and Size	
+	mov ah, 03h		;Read Cursor Position	
 	mov bh, 00h		;Return dh = row | dl = column
 	int 10h
 
@@ -233,7 +251,7 @@ key_backspace:
 	mov al, ' '
 	int 10h
 
-	mov ah, 03h		;Read Cursor Position and Size	
+	mov ah, 03h		;Read Cursor Position	
 	mov bh, 00h		;Return dh = row | dl = column
 	int 10h
 
@@ -252,6 +270,115 @@ exit_read_string:
 	mov [di], al
 	ret
 
+;-------------------------------------------------------------
+;Rotina de conversão de string para hexadecimal
+; si - ponteiro da string hexa
+; di - ponteiro do número a ser convertido
+;-------------------------------------------------------------
+string_hexa:
+
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
+	push di
+
+	xor ax, ax
+	mov [di], ax
+
+string_hexa_p2:
+
+	mov al, [si]
+	cmp al, 0
+	je string_hexa_fim
+
+	sub al, '0'
+	cmp al, 09h
+	jle string_hexa_p1
+	sub al, 07h
+
+string_hexa_p1:
+
+	push ax
+	mov bx, 10h
+	mov ax, [di]
+	mul bx
+	mov [di], ax
+	pop ax
+	or [di], al
+	inc si
+	jmp string_hexa_p2		
+
+string_hexa_fim:
+
+	pop di
+	pop si
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+
+	ret
+
+;-------------------------------------------------------------
+;Rotina de conversão de hexadecimal para string
+;Entrada: ax o valor em hexadecimal
+;         dx o número de bytes
+;         si o ponteiro da string
+;-------------------------------------------------------------
+hexa_string:  
+	push ax   
+        push bx
+        push cx
+	push si
+
+        mov bx, ax
+        mov cx, dx
+loop1:
+        mov ax, bx
+        and ax, 0xF    ;faz um E lógico com F
+        add ax, '0'    ;adiciona 0x30
+        cmp ax, '9'    ;compara com 9
+        jle digito1     ;se for menor ou igual, salta para digito1
+        add ax, 0x7    ;se não, adiciona 7.
+digito1:
+        push ax        ;guarda o valor convertido na pilha
+        shr bx, 4      ;rotaciona 4 bits para a direita
+        mov ax, bx
+        and ax, 0xF    ;faz um E lógico com F
+        add ax, '0'    ;adiciona 0x30
+        cmp ax, '9'    ;compara com 9
+        jle digito2     ;se for menor ou igual, salta para digito2
+        add ax, 0x7    ;se não, adiciona 7.
+digito2:
+        push ax
+        shr bx, 4      ;rotaciona 4 bits para a direita
+        dec cx
+        cmp cx, 0
+        jne loop1
+        mov cx, dx
+        shl cx, 1      ;multiplica o número de bytes por 2
+loop2:
+        pop ax
+        mov [si], ax
+        inc si
+        dec cx
+        cmp cx, 0
+        jne loop2
+        mov al, 0
+        inc si
+        mov [si], al
+
+	pop si
+        pop cx
+        pop bx
+	pop ax
+        ret
+
+;#################################################
+;Aárea de comandos
+;#################################################
 
 ;------------------------------------------------
 ; comando ver
@@ -446,6 +573,49 @@ cmd_date:
 cmd_reboot:
 	int 19h
 
+;-------------------------------------------------
+; comando address
+; verifica uma possição de memória
+;------------------------------------------------
+cmd_address:
+
+	;mov si, _dsp_address
+	;call string_print
+
+	mov si, CRLF
+	call string_print
+
+	;lê o endereço 2 bytes
+    	mov di, buffert
+    	call string_read
+
+	;espaço
+	mov ah, 0eh
+	mov al, ':'
+	int 10h
+
+	;converte a string em hexa
+	mov si, buffert
+	mov di, num
+	call string_hexa
+
+	;carrega o dado no endereço
+	mov bx, [num]
+	mov al, [bx]
+
+	;converte o dado para string
+	mov dx, 1
+	mov si, buffer
+	call hexa_string
+
+	;mostra o dado
+	mov si, buffer
+	call string_print
+
+	mov si, CRLF
+	call string_print
+
+	jmp inicio
 
 ;-------------------------------------------------
 times 1022 - ($-$$) db 0
