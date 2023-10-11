@@ -45,8 +45,8 @@ loop:
 	int 10h
 	
 	;converte a string em hexa
-	mov si, buffer_teclado	;ponteiro da string hexa
-	mov di, num		;Ponteiro do número a ser convertido
+	mov si, buffer_teclado
+	mov di, num
 	call string_hexa
 
 	;carrega o dado no endereço
@@ -120,7 +120,7 @@ string_hexa:
 	push di
 
 	xor ax, ax
-	mov [num], ax
+	mov [di], ax
 
 string_hexa_p2:
 
@@ -137,11 +137,11 @@ string_hexa_p1:
 
 	push ax
 	mov bx, 10h
-	mov ax, [num]
+	mov ax, [di]
 	mul bx
-	mov [num], ax
+	mov [di], ax
 	pop ax
-	or [num], al
+	or [di], al
 	inc si
 	jmp string_hexa_p2		
 
