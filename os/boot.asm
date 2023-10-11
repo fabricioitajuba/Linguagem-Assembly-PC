@@ -18,7 +18,7 @@
 	sti
                       
 	mov ah, 0		;Reset disk system
-	int 0x13    		;0x13 ah=0 dl = drive number
+	int 13h    		;0x13 ah=0 dl = drive number
 	jc errorpart
 
 	;carregando na memória o kernel no setor 2
@@ -27,7 +27,7 @@
 	mov ch, 0       	;trilha 0
 	mov cl, 2       	;setor 2
 	mov dh, 0       	;cabeçote 0
-	mov dl, 00h     	;boot: 00h - disket - qemu | 80h - hd - pendrive
+	mov dl, 80h     	;boot: 00h - disket - qemu | 80h - hd - pendrive
 	mov bx, 8000h   	;endereço onde se localiza o kernel
 	int 13h
 
