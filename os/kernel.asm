@@ -5,9 +5,9 @@ jmp config
 
 ;mensagens
 CRLF db 10, 13, 0
-version db 10, 13, "OS - versao 0.1", 10, 13, 0
+version db 10, 13, "AFT_OS - versao 0.1", 10, 13, 0
 help db 10, 13, "Comandos: ver, help, clear, time, date, reboot, address", 10, 13, 0
-msg1 db "Boot e Kernell carregados!", 10, 13, 0
+msg1 db "AFT_OS, versao 0.1 - 10/10/2023", 10, 13, 0
 dsp_cursor db '>> ', 0
 dsp_cmd_invalido db 10, 13, 'Comando invalido! ', 10, 13, 0
 _dsp_address: db 10, 13, "Address: ", 0
