@@ -250,6 +250,44 @@ carriage_return:
 	ret
 
 ;------------------------------------------------
+; Cursor enable
+; Habilita o cursor
+;------------------------------------------------
+cursor_enable:
+
+	push ax
+	push cx
+
+	mov ah, 01h
+	mov ch, 06h 
+	mov cl, 07h
+	int 10h
+
+	pop cx
+	pop ax
+
+	ret
+
+;------------------------------------------------
+; Cursor disable
+; Desabilita o cursor
+;------------------------------------------------
+cursor_disable:
+
+	push ax
+	push cx
+
+	;Disable cursor
+	mov ah, 01h
+	mov ch, 3fh
+	int 10h
+
+	pop cx
+	pop ax
+
+	ret
+
+;------------------------------------------------
 ; Read string
 ; di = Buffer da string
 ;------------------------------------------------
@@ -563,6 +601,8 @@ cmd_time:
 ;------------------------------------------------
 cmd_crono:
 
+	call cursor_disable
+
 	mov si, tec_exit
 	call string_print
 
@@ -646,6 +686,8 @@ cmd_crono_fim:
 
 	mov si, CRLF
 	call string_print
+
+	call cursor_enable
 
 	jmp inicio
 
