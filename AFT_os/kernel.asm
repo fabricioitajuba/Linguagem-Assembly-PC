@@ -3,13 +3,17 @@
 
 jmp config
 
+;Definições
+TIMER equ 046Ch
+
 ;mensagens
 CRLF db 10, 13, 0
 version db 10, 13, "AFT_OS - versao 0.1", 10, 13, 0
-help db 10, 13, "Comandos: ver, help, clear, time, date, reboot, address", 10, 13, 0
+help db 10, 13, "Comandos: ver, help, clear, time, crono, date, reboot, address", 10, 13, 0
 msg1 db "AFT_OS, versao 0.1 - 10/10/2023", 10, 13, 0
 dsp_cursor db '>> ', 0
 dsp_cmd_invalido db 10, 13, 'Comando invalido! ', 10, 13, 0
+tec_exit db 10, 13, 'Pressione qualquer tecla para sair! ', 10, 13, 0
 _dsp_address: db 10, 13, "Address: ", 0
 
 ;comandos
@@ -25,6 +29,9 @@ tam_dsp_clear equ $- dsp_clear
 dsp_time db 'time', 0
 tam_dsp_time equ $- dsp_time
 
+dsp_crono db 'crono', 0
+tam_dsp_crono equ $- dsp_crono
+
 dsp_date db 'date', 0
 tam_dsp_date equ $- dsp_date
 
@@ -37,8 +44,8 @@ tam_dsp_address equ $- dsp_address
 n_caracteres resb 1	;conta o número de caracteres
 
 ;Buffer
-buffer resb 30    	;Cria um buffer com 30 posições
-buffert resb 5    	;Cria um buffer com 5 posições
+bufferv resb 50    	;Buffer de vídeo
+buffert resb 50    	;Buffer do teclado
 num: resw 1
 
 config:
@@ -63,71 +70,79 @@ config:
 inicio:
 
 	;Cursor
-        mov si, dsp_cursor
+    mov si, dsp_cursor
 	call string_print
 
 	;lê uma string
-    	mov di, buffer
-    	call string_read
+    mov di, buffert
+    call string_read
 
 ;--> comando ver
-        mov si, dsp_ver
-        mov di, buffer
-        mov cx, tam_dsp_ver
-        cld
-        repe cmpsb
-        jecxz _cmd_ver
+    mov si, dsp_ver
+    mov di, buffert
+    mov cx, tam_dsp_ver
+    cld
+    repe cmpsb
+    jecxz _cmd_ver
 
 ;--> comando help
-        mov si, dsp_help
-        mov di, buffer
-        mov cx, tam_dsp_help
-        cld
-        repe cmpsb
-        jecxz _cmd_help
+    mov si, dsp_help
+    mov di, buffert
+    mov cx, tam_dsp_help
+    cld
+    repe cmpsb
+    jecxz _cmd_help
 
 ;--> comando clear
-        mov si, dsp_clear
-        mov di, buffer
-        mov cx, tam_dsp_clear
-        cld
-        repe cmpsb
-        jecxz _cmd_clear
+    mov si, dsp_clear
+    mov di, buffert
+    mov cx, tam_dsp_clear
+    cld
+    repe cmpsb
+    jecxz _cmd_clear
 
 ;--> comando time
-        mov si, dsp_time
-        mov di, buffer
-        mov cx, tam_dsp_time
-        cld
-        repe cmpsb
-        jecxz _cmd_time
+    mov si, dsp_time
+    mov di, buffert
+    mov cx, tam_dsp_time
+    cld
+    repe cmpsb
+    jecxz _cmd_time
+
+;--> comando crono
+    mov si, dsp_crono
+    mov di, buffert
+    mov cx, tam_dsp_crono
+    cld
+    repe cmpsb
+    jecxz _cmd_crono
 
 ;--> comando date
-        mov si, dsp_date
-        mov di, buffer
-        mov cx, tam_dsp_date
-        cld
-        repe cmpsb
-        jecxz _cmd_date
+    mov si, dsp_date
+    mov di, buffert
+    mov cx, tam_dsp_date
+    cld
+    repe cmpsb
+    jecxz _cmd_date
 
 ;--> comando reboot
-        mov si, dsp_reboot
-        mov di, buffer
-        mov cx, tam_dsp_reboot
-        cld
-        repe cmpsb
-        jecxz _cmd_reboot
+    mov si, dsp_reboot
+    mov di, buffert
+    mov cx, tam_dsp_reboot
+    cld
+    repe cmpsb
+    jecxz _cmd_reboot
 
 ;--> comando address
-        mov si, dsp_address
-        mov di, buffer
-        mov cx, tam_dsp_address
-        cld
-        repe cmpsb
-        jecxz _cmd_address
+    mov si, dsp_address
+    mov di, buffert
+    mov cx, tam_dsp_address
+    cld
+    repe cmpsb
+    jecxz _cmd_address
 
 ;--> comando inválido
-        mov si, dsp_cmd_invalido
+    mov si, dsp_cmd_invalido
 	call string_print
 
 	jmp inicio
@@ -135,7 +150,7 @@ inicio:
 
 
 ;#################################################
-;Aárea de jumps
+;Área de jumps
 ;#################################################
 
 _cmd_ver:
@@ -149,6 +164,9 @@ _cmd_clear:
 
 _cmd_time:
 	jmp cmd_time
+
+_cmd_crono:
+	jmp cmd_crono
 
 _cmd_date:
 	jmp cmd_date
@@ -196,11 +214,47 @@ string_print_end:
 
 	ret
 
-;-------------------------------------------------
+;------------------------------------------------
+; Delay
+; Gera um delay
+;------------------------------------------------
+delay:
+
+	push bx
+
+	mov bx, [TIMER]
+	add bx, 5
+
+delay_loop:
+	cmp [TIMER], bx
+	jl delay_loop
+
+	pop bx
+
+	ret
+
+;------------------------------------------------
+; Carriage return
+; Retorna o cursor para a primeira coluna
+;------------------------------------------------
+carriage_return:
+
+	push ax
+
+	mov ah, 0eh
+	mov al, 0dh
+	int 10h
+
+	pop ax
+
+	ret
+
+;------------------------------------------------
 ; Read string
-; buffer = string lida
+; di = Buffer da string
 ;------------------------------------------------
 string_read:
+
 	mov al, 00h
 	mov [n_caracteres], al
 
@@ -210,7 +264,7 @@ string_read_loop:
 	int 16h                 ;no teclado e guarda em al
 
 	cmp al, 0dh             ;compara o caracter com ENTER
-	je  exit_read_string    ;salta para fim caso seja igual
+	je  string_read_exit    ;salta para fim caso seja igual
 
 	cmp al, 08h             ;compara o caracter com BACKSPACE
 	je  key_backspace       ;salta para fim caso seja igual
@@ -262,12 +316,18 @@ key_backspace:
 	int 10h
 
 	dec di
+
+	;mov al, 00h
+	;mov [si], al
+
 	jmp string_read_loop
 
-exit_read_string:
+string_read_exit:
+	
 	inc di
 	mov al, 0
 	mov [di], al
+
 	ret
 
 ;-------------------------------------------------------------
@@ -329,52 +389,52 @@ string_hexa_fim:
 ;-------------------------------------------------------------
 hexa_string:  
 	push ax   
-        push bx
-        push cx
+    push bx
+    push cx
 	push si
 
-        mov bx, ax
-        mov cx, dx
+    mov bx, ax
+    mov cx, dx
 loop1:
-        mov ax, bx
-        and ax, 0xF    ;faz um E lógico com F
-        add ax, '0'    ;adiciona 0x30
-        cmp ax, '9'    ;compara com 9
-        jle digito1     ;se for menor ou igual, salta para digito1
-        add ax, 0x7    ;se não, adiciona 7.
+    mov ax, bx
+    and ax, 0xF    ;faz um E lógico com F
+    add ax, '0'    ;adiciona 0x30
+    cmp ax, '9'    ;compara com 9
+    jle digito1     ;se for menor ou igual, salta para digito1
+    add ax, 0x7    ;se não, adiciona 7.
 digito1:
-        push ax        ;guarda o valor convertido na pilha
-        shr bx, 4      ;rotaciona 4 bits para a direita
-        mov ax, bx
-        and ax, 0xF    ;faz um E lógico com F
-        add ax, '0'    ;adiciona 0x30
-        cmp ax, '9'    ;compara com 9
-        jle digito2     ;se for menor ou igual, salta para digito2
-        add ax, 0x7    ;se não, adiciona 7.
+    push ax        ;guarda o valor convertido na pilha
+    shr bx, 4      ;rotaciona 4 bits para a direita
+    mov ax, bx
+    and ax, 0xF    ;faz um E lógico com F
+    add ax, '0'    ;adiciona 0x30
+    cmp ax, '9'    ;compara com 9
+    jle digito2     ;se for menor ou igual, salta para digito2
+    add ax, 0x7    ;se não, adiciona 7.
 digito2:
-        push ax
-        shr bx, 4      ;rotaciona 4 bits para a direita
-        dec cx
-        cmp cx, 0
-        jne loop1
-        mov cx, dx
-        shl cx, 1      ;multiplica o número de bytes por 2
+    push ax
+    shr bx, 4      ;rotaciona 4 bits para a direita
+    dec cx
+    cmp cx, 0
+    jne loop1
+    mov cx, dx
+    shl cx, 1      ;multiplica o número de bytes por 2
 loop2:
-        pop ax
-        mov [si], ax
-        inc si
-        dec cx
-        cmp cx, 0
-        jne loop2
-        mov al, 0
-        inc si
-        mov [si], al
+    pop ax
+    mov [si], ax
+    inc si
+    dec cx
+    cmp cx, 0
+    jne loop2
+    mov al, 0
+    inc si
+    mov [si], al
 
 	pop si
-        pop cx
-        pop bx
+    pop cx
+    pop bx
 	pop ax
-        ret
+    ret
 
 ;#################################################
 ;Aárea de comandos
@@ -385,6 +445,7 @@ loop2:
 ; mostra a versão do sistema operacional
 ;------------------------------------------------
 cmd_ver:
+
 	mov si, version 
 	call string_print
 
@@ -395,6 +456,7 @@ cmd_ver:
 ; mostra todos os comandos
 ;------------------------------------------------
 cmd_help:
+
 	mov si, help 
 	call string_print
 
@@ -406,11 +468,15 @@ cmd_help:
 ;------------------------------------------------
 cmd_clear:
 
-    	mov ah, 00h         ;modo de tela
-    	mov al, 03h         ;modo texto 80x25 colorido
-    	int 10h
+	push ax
 
-        jmp inicio
+    mov ah, 00h         ;modo de tela
+    mov al, 03h         ;modo texto 80x25 colorido
+    int 10h
+
+	pop ax
+
+	jmp inicio
 
 ;------------------------------------------------
 ; comando time
@@ -425,7 +491,7 @@ cmd_time:
 	mov ah, 02h
 	int 1ah
 
-	mov si, buffer
+	mov si, bufferv
 
 	;hora
 	mov al, ch
@@ -482,7 +548,7 @@ cmd_time:
 	mov [si], al
 	inc si
 
-	mov si, buffer
+	mov si, bufferv
 	call string_print
 
 	mov si, CRLF
@@ -490,6 +556,98 @@ cmd_time:
 
 	jmp inicio
 
+
+;------------------------------------------------
+; comando crono
+; mostra a hora do sistema atualizada
+;------------------------------------------------
+cmd_crono:
+
+	mov si, tec_exit
+	call string_print
+
+cmd_crono_loop:
+
+	;Verifica se uma tecla foi pressionada
+	mov ah, 01h
+	int 16h
+	jnz cmd_crono_fim
+
+	;Hora do sistema
+	mov ah, 02h
+	int 1ah
+
+	mov si, bufferv
+
+	;hora
+	mov al, ch
+	push ax
+	shr al, 4
+	and al, 0fh
+	add al, '0'
+	mov [si], al
+	inc si
+
+	pop ax
+	and al, 0fh
+	add al, '0'
+	mov [si], al
+	inc si
+
+	mov al, ':'
+	mov [si], al
+	inc si   
+
+	;plota minutos
+	mov al, cl
+
+	push ax
+	shr al, 4
+	and al, 0fh
+	add al, '0'
+	mov [si], al
+	inc si
+
+	pop ax
+	and al, 0fh
+	add al, '0'
+	mov [si], al
+	inc si
+
+	mov al, ':'
+	mov [si], al
+	inc si 
+
+	;plota segundos
+	mov al, dh
+
+	push ax
+	shr al, 4
+	and al, 0fh
+	add al, '0'
+	mov [si], al
+	inc si
+
+	pop ax
+	and al, 0fh
+	add al, '0'
+	mov [si], al
+	inc si
+
+	mov si, bufferv
+	call string_print
+
+	call carriage_return
+	call delay
+
+	jmp cmd_crono_loop
+
+cmd_crono_fim:
+
+	mov si, CRLF
+	call string_print
+
+	jmp inicio
 
 ;-------------------------------------------------
 ; comando date
@@ -500,7 +658,7 @@ cmd_date:
 	mov si, CRLF
 	call string_print
 
-	mov si, buffer
+	mov si, bufferv
 
 	mov ah, 04h
 	int 1ah
@@ -558,7 +716,7 @@ cmd_date:
 	mov [si], al
 	inc si
 
-	mov si, buffer
+	mov si, bufferv
 	call string_print
 
 	mov si, CRLF
@@ -586,8 +744,8 @@ cmd_address:
 	call string_print
 
 	;lê o endereço 2 bytes
-    	mov di, buffert
-    	call string_read
+    mov di, buffert
+    call string_read
 
 	;espaço
 	mov ah, 0eh
@@ -605,11 +763,11 @@ cmd_address:
 
 	;converte o dado para string
 	mov dx, 1
-	mov si, buffer
+	mov si, bufferv
 	call hexa_string
 
 	;mostra o dado
-	mov si, buffer
+	mov si, bufferv
 	call string_print
 
 	mov si, CRLF
@@ -618,5 +776,5 @@ cmd_address:
 	jmp inicio
 
 ;-------------------------------------------------
-times 1022 - ($-$$) db 0
+times 2046 - ($-$$) db 0
 dw 0xAA55

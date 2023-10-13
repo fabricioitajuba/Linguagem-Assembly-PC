@@ -23,7 +23,7 @@
 
 	;carregando na memória o kernel no setor 2
 	mov ah, 02h     	;serviço 2 par ler disco
-	mov al, 2       	;quantidade de setor lido
+	mov al, 4       	;quantidade de setor lido
 	mov ch, 0       	;trilha 0
 	mov cl, 2       	;setor 2
 	mov dh, 0       	;cabeçote 0
